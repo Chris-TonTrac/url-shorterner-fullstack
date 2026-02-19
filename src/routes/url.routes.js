@@ -1,5 +1,5 @@
 import express from "express";
-import { validateShortCode, validateUrl } from "../validation/url.validation.js";
+import { shortCodeValidation } from "../validation/request.validation.js";
 import { nanoid } from "nanoid";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { createShortCode, getUserCodes, deleteShortCodeById, getTargetUrl } from "../service/url.service.js";
@@ -10,27 +10,18 @@ const router = express.Router();
 // The user can optionally supply their own short code; if they don't, we generate
 // a random 15-character one via nanoid. Either way we validate it before saving.
 router.post("/shorten", authMiddleware, async (req, res) => {
-  const { targetUrl, shortCode: providedShortCode } = req.body;
+  const validationResult = await shortCodeValidation.safeParseAsync(req.body);
 
-  const error = validateUrl(targetUrl);
+  if (validationResult.error) {
+    return res.status(400).json({ error: validationResult.error.format() });
+  };
 
-  if (error) {
-    return res.status(400).json(error);
-  }
-
-  // Only validate the custom code if the user actually provided one
-  if (providedShortCode) {
-    const shortCodeError = validateShortCode(providedShortCode);
-
-    if (shortCodeError) {
-      return res.status(400).json(shortCodeError);
-    }
-  }
+  const { url, code } = validationResult.data;
 
   // Fall back to a generated code when none was supplied
-  const shortCode = providedShortCode ?? nanoid(15);
+  const shortCode = code ?? nanoid(15);
 
-  const result = await createShortCode(targetUrl, shortCode, req.user.id);
+  const result = await createShortCode(url, shortCode, req.user.id);
 
   return res.status(201).json({ success: { shortCode: result.shortCode } });
 });
@@ -78,12 +69,6 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 // can be redirected to where it points.
 router.get("/:shortCode", async (req, res) => {
   const code = req.params.shortCode;
-
-  const shortCodeError = validateShortCode(code);
-
-  if (shortCodeError) {
-    return res.status(404).json({ error: "Invalid short code provided." });
-  }
 
   const result = await getTargetUrl(code);
 

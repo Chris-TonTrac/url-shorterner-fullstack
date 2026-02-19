@@ -1,66 +1,58 @@
 import express from 'express';
-import db from '../db/index.js';
-import { usersTable } from '../model/user.model.js';
-import { validateSignUp, loginValidation } from '../validation/user.validation.js';
 import { getUser, createUser } from '../service/user.service.js';
 import { createUserToken } from '../utils/token.js';
 import { hashPassword } from '../utils/hash.js';
+import { signUpValidation, loginValidation } from '../validation/request.validation.js';
 
 const router = express.Router();
 
 // --- Sign Up ---
 // Validate the fields, hash the password, then create the user.
 router.post('/sign-up', async(req, res) => {
-    const { firstName, lastName, email, password } = req.body;
+    const validationResult = await signUpValidation.safeParseAsync(req.body);
 
-    const error = validateSignUp(firstName, lastName, email, password);
+    if(validationResult.error) {
+        return res.status(400).json({ error: validationResult.error.format()});
+    };
 
-    // Return early if anything looks wrong — no point going further
-    if(error) {
-        return res.status(400).json(error);
+    const { firstName, lastName, email, password } = validationResult.data;
+
+    const existingUser = await getUser(email);
+
+    if(existingUser.length > 0){
+        return res.status(400).json({ error: 'User with this email already exists.'});
     };
 
     const { salt, password: hashedPassword } = hashPassword(password);
 
-    try {
-        const user = await createUser(firstName, lastName, email, hashedPassword, salt);
+    const user = await createUser(firstName, lastName, email, hashedPassword, salt);
 
-        // 201 = Created, send back the new user's id so the client knows it worked
-        return res.status(201).json({ success: user.id});
-    } catch (error) {
-        const pgCode = error?.cause?.code ?? error?.code;
-        const constraint = error?.cause?.constraint ?? error?.constraint;
-
-        if (pgCode === '23505' && constraint === 'users_email_unique') {
-            return res.status(409).json({ error: 'Email already exists.' });
-        }
-
-        return res.status(500).json({ error: 'Failed to create user.' });
-    }
+    return res.status(201).json({ data: { userId: user.id }});
 });
 
 // --- Login ---
 // Look up the user by email, re-hash the provided password using the stored
 // salt, and compare it to what we have in the db. If it matches, hand back a JWT.
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const validationResult = await loginValidation.safeParseAsync(req.body);
 
-    const error = loginValidation(email, password);
-
-    if(error) {
-        return res.status(400).json(error);
+    if(validationResult.error) {
+    return res.status(400).json({ error: validationResult.error.format() });
     };
 
-    const user = await getUser(email);
+    const { email, password } = validationResult.data;
+
+    const users = await getUser(email);
 
     // No account found for this email
-    if(!user) {
-        return res.status(400).json({ error: 'Invalid email.'});
+    if(users.length === 0) {
+    return res.status(404).json({ error: 'user with this email does not exist.'})
     };
 
+    const user = users[0];
+
     // Re-create the hash using the same salt that was used when the password was first set
-    const salt = user.salt;
-    const { password: newHashedPassword } = hashPassword(password, salt);
+    const { password: newHashedPassword } = hashPassword(password, user.salt);
 
     // Hashes don't match → wrong password
     if(user.password !== newHashedPassword) {

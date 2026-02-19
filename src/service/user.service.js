@@ -5,7 +5,7 @@ import { usersTable } from "../model/user.model.js";
 // Fetch a user by email — we also pull back the salt and hashed password
 // so the login route can verify the incoming password against them.
 export async function getUser(email) {
-  const [user] = await db
+  const users = await db
     .select({
         id: usersTable.id,
         firstName: usersTable.firstName,
@@ -17,8 +17,7 @@ export async function getUser(email) {
     .from(usersTable)
     .where(eq(usersTable.email, email));
 
-  // Drizzle returns an array; destructuring gives us the first row or undefined
-  return user;
+  return users;
 };
 
 // Insert a new user row and give back the generated id.
