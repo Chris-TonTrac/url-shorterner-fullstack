@@ -4,6 +4,7 @@ import { usersTable } from '../model/user.model.js';
 import { validateSignUp, loginValidation } from '../validation/user.validation.js';
 import { createHmac, randomBytes } from 'crypto';
 import { getUser } from '../service/user.service.js';
+import { createUserToken } from '../utils/token.js';
 
 const router = express.Router();
 
@@ -54,7 +55,9 @@ router.post('/login', async (req, res) => {
         return res.status(400).json({ error: 'Invalid password' });
     };
 
-    return res.json({ success: 'Logged in successfully.'});
+    const token = createUserToken({ id: user.id });
+
+    return res.json({ token })
 });
 
 export default router;
