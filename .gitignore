@@ -1,9 +1,11 @@
 node_modules/
+**/node_modules/
 
 # Environment files
 .env
 .env.*
 !.env.example
+!.env.*.example
 
 # Logs
 logs/
@@ -16,16 +18,9 @@ yarn-error.log*
 # Dependency & package manager artifacts
 .pnpm-store/
 
-# Runtime files
-pids/
-*.pid
-*.seed
-*.pid.lock
-
 # Test and coverage output
 coverage/
 .nyc_output/
-scripts/
 
 # Build output
 dist/
@@ -38,6 +33,7 @@ build/
 
 # IDE/editor files
 .vscode/
+!.vscode/extensions.json
 .idea/
 *.iml
 *.suo
