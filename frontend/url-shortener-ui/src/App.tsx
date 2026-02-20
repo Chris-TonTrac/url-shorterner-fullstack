@@ -21,7 +21,7 @@ const App = () => {
         <div className="navbar-center hidden lg:flex">
         </div>
         <div className="navbar-end mr-40">
-          <Link to='#' className="btn border-0 bg-black text-white rounded-md ">Get Started</Link>
+          <Link to='#' className="btn border-0 bg-black text-white rounded-md hover:bg-gray-700">Get Started</Link>
         </div>
       </div>
 
@@ -38,8 +38,8 @@ const App = () => {
             </p>
 
             <div className='flex gap-8 justify-center pt-8'>
-              <Link to='#' className='btn btn-lg text-white bg-black rounded-md'> Start for free</Link>
-              <Link to='#' className='btn btn-lg text-black bg-white rounded-md '> Learn more</Link>
+              <Link to='#' className='btn btn-lg text-white bg-black rounded-md hover:bg-gray-700'> Start for free</Link>
+              <Link to='#' className='btn btn-lg text-black bg-white rounded-md hover:bg-gray-300'> Learn more</Link>
             </div>
           </div>
         </div>
@@ -50,7 +50,7 @@ const App = () => {
         </div>
 
         <div className='flex justify-center gap-12 pt-10'>
-          <div className="card w-96 bg-base-100 card-xl shadow-sm">
+          <div className="card w-96 bg-base-100 card-xl shadow-sm hover:shadow-xl">
             <div className="card-body">
               <RxLightningBolt className='text-4xl text-blue-700' />
               <h2 className="card-title">Lightning Fast</h2>
@@ -58,7 +58,7 @@ const App = () => {
             </div>
           </div>
 
-          <div className="card w-96 bg-base-100 card-xl shadow-sm">
+          <div className="card w-96 bg-base-100 card-xl shadow-sm hover:shadow-xl">
             <div className="card-body">
               <FiShield className='text-4xl text-blue-700' />
               <h2 className="card-title">Secure & Private</h2>
@@ -66,7 +66,7 @@ const App = () => {
             </div>
           </div>
 
-          <div className="card w-96 bg-base-100 card-xl shadow-sm">
+          <div className="card w-96 bg-base-100 card-xl shadow-sm hover:shadow-xl">
             <div className="card-body">
               <VscGraph className='text-4xl text-blue-700' />
               <h2 className="card-title">Track Performance</h2>
