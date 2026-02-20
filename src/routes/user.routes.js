@@ -20,7 +20,7 @@ router.post('/sign-up', async(req, res) => {
     const existingUser = await getUser(email);
 
     if(existingUser.length > 0){
-        return res.status(400).json({ error: 'User with this email already exists.'});
+        return res.status(409).json({ error: 'User with this email already exists.'});
     };
 
     const { salt, password: hashedPassword } = hashPassword(password);
@@ -46,7 +46,7 @@ router.post('/login', async (req, res) => {
 
     // No account found for this email
     if(users.length === 0) {
-    return res.status(404).json({ error: 'user with this email does not exist.'})
+    return res.status(401).json({ error: 'Invalid email or password.'})
     };
 
     const user = users[0];
@@ -56,7 +56,7 @@ router.post('/login', async (req, res) => {
 
     // Hashes don't match → wrong password
     if(user.password !== newHashedPassword) {
-        return res.status(400).json({ error: 'Invalid password' });
+        return res.status(401).json({ error: 'Invalid email or password.' });
     };
 
     // Everything checks out — sign a token and send it back
