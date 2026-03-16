@@ -1,73 +1,91 @@
-# React + TypeScript + Vite
+# URL Shortener UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend application for the URL Shortener project, built with React, TypeScript, Vite, Tailwind CSS, and DaisyUI.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- User authentication (sign up and login)
+- JWT token storage with remember-me support
+- Create short URLs (custom code optional)
+- View all URLs created by the current user
+- Delete URLs
+- Copy public short links
+- Dashboard stats (total URLs, total clicks, average clicks)
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript
+- Vite
+- React Router
+- Tailwind CSS + DaisyUI
+- React Icons
+- Framer Motion
 
-## Expanding the ESLint configuration
+## Project Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+  api/
+    user.api.ts       # Auth API helpers
+    url.api.ts        # URL API helpers
+  pages/
+    home.page.tsx
+    login.page.tsx
+    register.page.tsx
+    dashboard.page.tsx
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Environment Variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a .env file in the project root:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_API_BASE_URL=http://localhost:5000
 ```
+
+If not provided, the frontend falls back to http://localhost:5000.
+
+## Backend Endpoints Used
+
+Auth:
+- POST /user/sign-up
+- POST /user/login
+
+URLs:
+- POST /url/shorten
+- GET /url/codes
+- DELETE /url/:id
+- GET /url/:shortCode (public redirect link target)
+
+## Getting Started
+
+1. Install dependencies:
+
+```bash
+pnpm install
+```
+
+2. Start development server:
+
+```bash
+pnpm dev
+```
+
+3. Open the app:
+
+```text
+http://localhost:5173
+```
+
+## Available Scripts
+
+- pnpm dev: Run Vite dev server
+- pnpm build: Type-check and build for production
+- pnpm preview: Preview production build
+- pnpm lint: Run ESLint
+
+## Notes
+
+- The app expects the backend server to be running and accessible at VITE_API_BASE_URL.
+- Auth token is saved to localStorage when remember-me is checked, otherwise sessionStorage is used.

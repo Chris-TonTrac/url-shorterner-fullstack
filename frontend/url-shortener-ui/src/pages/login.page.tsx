@@ -1,14 +1,16 @@
 import React from "react"
 import { IoLinkSharp } from "react-icons/io5"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { loginUser, signUpUser } from "@/api/user.api"
 
 const Login = () => {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = React.useState("login")
   const [loginEmail, setLoginEmail] = React.useState("")
   const [loginPassword, setLoginPassword] = React.useState("")
@@ -19,8 +21,20 @@ const Login = () => {
   const [password, setPassword] = React.useState("")
   const [confirmPassword, setConfirmPassword] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
 
-  const handleLoginSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const persistToken = (token: string) => {
+    if (rememberMe) {
+      localStorage.setItem("shortlinks_token", token)
+      sessionStorage.removeItem("shortlinks_token")
+      return
+    }
+
+    sessionStorage.setItem("shortlinks_token", token)
+    localStorage.removeItem("shortlinks_token")
+  }
+
+  const handleLoginSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError(null)
 
@@ -29,11 +43,23 @@ const Login = () => {
       return
     }
 
-    // TODO: Wire to API login endpoint.
-    console.log({ loginEmail, loginPassword, rememberMe })
+    try {
+      setIsSubmitting(true)
+      const result = await loginUser({
+        email: loginEmail,
+        password: loginPassword,
+      })
+
+      persistToken(result.token)
+      navigate("/user/dashboard")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleRegisterSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleRegisterSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError(null)
 
@@ -47,8 +73,27 @@ const Login = () => {
       return
     }
 
-    // TODO: Wire to API registration endpoint.
-    console.log({ name, email, password })
+    const [firstName, ...rest] = name.trim().split(/\s+/)
+    const lastName = rest.join(" ") || "-"
+
+    try {
+      setIsSubmitting(true)
+
+      await signUpUser({
+        firstName,
+        lastName,
+        email,
+        password,
+      })
+
+      const loginResult = await loginUser({ email, password })
+      persistToken(loginResult.token)
+      navigate("/user/dashboard")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -149,7 +194,7 @@ const Login = () => {
                 <p className="text-left text-sm text-red-600">{error}</p>
               ) : null}
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 Sign In
               </Button>
             </form>
@@ -233,7 +278,7 @@ const Login = () => {
                 <p className="text-left text-sm text-red-600">{error}</p>
               ) : null}
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 Create Account
               </Button>
             </form>
