@@ -9,6 +9,7 @@ const router = express.Router();
 // --- Sign Up ---
 // Validate the fields, hash the password, then create the user.
 router.post('/sign-up', async(req, res) => {
+    try {
     const validationResult = await signUpValidation.safeParseAsync(req.body);
 
     if(validationResult.error) {
@@ -28,12 +29,17 @@ router.post('/sign-up', async(req, res) => {
     const user = await createUser(firstName, lastName, email, hashedPassword, salt);
 
     return res.status(201).json({ data: { userId: user.id }});
+    } catch (error) {
+        console.error('Sign-up route error:', error);
+        return res.status(500).json({ error: 'Unable to complete sign up right now.' });
+    }
 });
 
 // --- Login ---
 // Look up the user by email, re-hash the provided password using the stored
 // salt, and compare it to what we have in the db. If it matches, hand back a JWT.
 router.post('/login', async (req, res) => {
+    try {
     const validationResult = await loginValidation.safeParseAsync(req.body);
 
     if(validationResult.error) {
@@ -62,7 +68,11 @@ router.post('/login', async (req, res) => {
     // Everything checks out — sign a token and send it back
     const token = createUserToken({ id: user.id });
 
-    return res.json({ token })
+        return res.json({ token })
+    } catch (error) {
+        console.error('Login route error:', error);
+        return res.status(500).json({ error: 'Unable to complete login right now.' });
+    }
 });
 
 export default router;

@@ -9,6 +9,15 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { loginUser, signUpUser } from "@/api/user.api"
 
+const toDisplayNameFromEmail = (email: string) => {
+  const localPart = email.split("@")[0] || "User"
+  return localPart
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ")
+}
+
 const Login = () => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = React.useState("login")
@@ -23,15 +32,19 @@ const Login = () => {
   const [error, setError] = React.useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
-  const persistToken = (token: string) => {
+  const persistAuthSession = (token: string, userName: string) => {
     if (rememberMe) {
       localStorage.setItem("shortlinks_token", token)
+      localStorage.setItem("shortlinks_user_name", userName)
       sessionStorage.removeItem("shortlinks_token")
+      sessionStorage.removeItem("shortlinks_user_name")
       return
     }
 
     sessionStorage.setItem("shortlinks_token", token)
+    sessionStorage.setItem("shortlinks_user_name", userName)
     localStorage.removeItem("shortlinks_token")
+    localStorage.removeItem("shortlinks_user_name")
   }
 
   const handleLoginSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -50,7 +63,7 @@ const Login = () => {
         password: loginPassword,
       })
 
-      persistToken(result.token)
+      persistAuthSession(result.token, toDisplayNameFromEmail(loginEmail))
       navigate("/user/dashboard")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed.")
@@ -87,7 +100,7 @@ const Login = () => {
       })
 
       const loginResult = await loginUser({ email, password })
-      persistToken(loginResult.token)
+      persistAuthSession(loginResult.token, name.trim())
       navigate("/user/dashboard")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed.")

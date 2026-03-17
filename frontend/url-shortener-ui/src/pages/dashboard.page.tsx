@@ -15,6 +15,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const [token, setToken] = React.useState<string | null>(null);
+  const [userName, setUserName] = React.useState("User");
   const [codes, setCodes] = React.useState<UrlCode[]>([]);
   const [loadingCodes, setLoadingCodes] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -52,6 +53,7 @@ const Dashboard: React.FC = () => {
 
   React.useEffect(() => {
     const storedToken = localStorage.getItem("shortlinks_token") || sessionStorage.getItem("shortlinks_token");
+    const storedName = localStorage.getItem("shortlinks_user_name") || sessionStorage.getItem("shortlinks_user_name");
 
     if (!storedToken) {
       navigate("/user/login");
@@ -59,12 +61,15 @@ const Dashboard: React.FC = () => {
     }
 
     setToken(storedToken);
+    setUserName(storedName ?? "User");
     loadCodes(storedToken);
   }, [loadCodes, navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("shortlinks_token");
+    localStorage.removeItem("shortlinks_user_name");
     sessionStorage.removeItem("shortlinks_token");
+    sessionStorage.removeItem("shortlinks_user_name");
     navigate("/user/login");
   };
 
@@ -132,7 +137,9 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <p className="text-base text-gray-600">user@gmail.com</p>
+            <span className="rounded-full border border-cyan-200 bg-purple-200 px-3 py-1 text-sm font-semibold text-black shadow-sm">
+              {userName}
+            </span>
             <button className="btn btn-ghost btn-sm" onClick={handleLogout}>
               <LuLogOut className="text-base" />
               Logout

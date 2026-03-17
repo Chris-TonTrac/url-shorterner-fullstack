@@ -13,4 +13,10 @@ app.use(express.json());
 app.use('/user', userRouter);
 app.use('/', urlRouter);
 
+// Fallback error handler so the frontend gets structured JSON instead of dropped connections.
+app.use((error, req, res, next) => {
+	console.error('Unhandled server error:', error);
+	return res.status(500).json({ error: 'Internal server error.' });
+});
+
 app.listen(PORT, () => console.log(`Server running on PORT: ${PORT}`));

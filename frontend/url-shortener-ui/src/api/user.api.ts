@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 type ApiErrorPayload = {
 	error?: unknown;
@@ -12,7 +12,14 @@ const getErrorMessage = (payload: ApiErrorPayload, fallback: string) => {
 };
 
 const requestJson = async <T>(path: string, init: RequestInit): Promise<T> => {
-	const response = await fetch(`${API_BASE_URL}${path}`, init);
+	let response: Response;
+
+	try {
+		response = await fetch(`${API_BASE_URL}${path}`, init);
+	} catch {
+		throw new Error("Unable to reach the API. Check backend server and API base URL.");
+	}
+
 	const bodyText = await response.text();
 
 	let payload: unknown = null;

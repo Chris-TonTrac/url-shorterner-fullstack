@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
+const PUBLIC_BASE_URL = import.meta.env.VITE_PUBLIC_BASE_URL ?? "http://localhost:8000";
 
 type ApiErrorPayload = {
 	error?: unknown;
@@ -36,7 +37,14 @@ const getErrorMessage = (payload: ApiErrorPayload, fallback: string) => {
 };
 
 const requestJson = async <T>(path: string, init: RequestInit): Promise<T> => {
-	const response = await fetch(`${API_BASE_URL}${path}`, init);
+	let response: Response;
+
+	try {
+		response = await fetch(`${API_BASE_URL}${path}`, init);
+	} catch {
+		throw new Error("Unable to reach the API. Check backend server and API base URL.");
+	}
+
 	const bodyText = await response.text();
 
 	let payload: unknown = null;
@@ -75,7 +83,7 @@ export const createShortUrl = async (
 	token: string,
 	payload: { url: string; code?: string }
 ) => {
-	const result = await requestJson<CreateShortCodeResponse>("/url/shorten", {
+	const result = await requestJson<CreateShortCodeResponse>("/shorten", {
 		method: "POST",
 		headers: toAuthHeaders(token),
 		body: JSON.stringify(payload),
@@ -85,7 +93,7 @@ export const createShortUrl = async (
 };
 
 export const getUserUrlCodes = async (token: string): Promise<UrlCode[]> => {
-	const result = await requestJson<GetCodesResponse>("/url/codes", {
+	const result = await requestJson<GetCodesResponse>("/codes", {
 		method: "GET",
 		headers: toAuthHeaders(token),
 	});
@@ -98,12 +106,12 @@ export const getUserUrlCodes = async (token: string): Promise<UrlCode[]> => {
 };
 
 export const deleteShortUrlById = async (token: string, urlId: string) => {
-	return requestJson<{ success: string }>(`/url/${urlId}`, {
+	return requestJson<{ success: string }>(`/${urlId}`, {
 		method: "DELETE",
 		headers: toAuthHeaders(token),
 	});
 };
 
 export const buildPublicShortUrl = (shortCode: string) => {
-	return `${API_BASE_URL}/url/${shortCode}`;
+	return `${PUBLIC_BASE_URL}/${shortCode}`;
 };
