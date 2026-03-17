@@ -13,7 +13,7 @@ router.post('/sign-up', async(req, res) => {
     const validationResult = await signUpValidation.safeParseAsync(req.body);
 
     if(validationResult.error) {
-        return res.status(400).json({ error: validationResult.error.format()});
+        return res.status(400).json({ error: validationResult.error.format() });
     };
 
     const { firstName, lastName, email, password } = validationResult.data;
